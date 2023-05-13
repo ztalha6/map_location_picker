@@ -470,11 +470,103 @@ class _PlacesAutocompleteState extends State<PlacesAutocomplete> {
 
   @override
   Widget build(BuildContext context) {
-    return FormBuilderTypeAhead<Prediction>(
-      decoration: InputDecoration(
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0xFFF6F7F9),
+
+    /// Get text controller from [searchController] or create new instance of [TextEditingController] if [searchController] is null or empty
+    final textController = useState<TextEditingController>(
+        searchController ?? TextEditingController());
+    return SafeArea(
+      child: Card(
+        margin: topCardMargin,
+        shape: topCardShape,
+        color: topCardColor,
+        child: ListTile(
+          minVerticalPadding: 0,
+          contentPadding: const EdgeInsets.only(right: 4, left: 4),
+          leading: showBackButton ? const BackButton() : backButton,
+          title: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16),
+            child: FormBuilderTypeAhead<Prediction>(
+              decoration: decoration ??
+                  InputDecoration(
+                    hintText: searchHintText,
+                    border: InputBorder.none,
+                    filled: true,
+                    suffixIcon: (showClearButton && initialValue == null)
+                        ? IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => textController.value.clear(),
+                          )
+                        : suffixIcon,
+                  ),
+              name: 'Search',
+              controller: initialValue == null ? textController.value : null,
+              selectionToTextTransformer: (result) {
+                return result.description ?? "";
+              },
+              itemBuilder: itemBuilder ??
+                  (context, continent) {
+                    return ListTile(
+                      title: Text(continent.description ?? ""),
+                    );
+                  },
+              suggestionsCallback: (query) async {
+                List<Prediction> predictions = await autoCompleteState().search(
+                  query,
+                  apiKey,
+                  language: language,
+                  sessionToken: sessionToken,
+                  region: region,
+                  components: components,
+                  location: location,
+                  offset: offset,
+                  origin: origin,
+                  radius: radius,
+                  strictbounds: strictbounds,
+                  types: types,
+                );
+                return predictions;
+              },
+              onSuggestionSelected: (value) async {
+                textController.value.selection = TextSelection.collapsed(
+                    offset: textController.value.text.length);
+                _getDetailsByPlaceId(value.placeId ?? "", context);
+                onSuggestionSelected?.call(value);
+              },
+              hideSuggestionsOnKeyboardHide: hideSuggestionsOnKeyboardHide,
+              initialValue: initialValue,
+              validator: validator,
+              suggestionsBoxDecoration: suggestionsBoxDecoration,
+              scrollController: scrollController,
+              animationDuration: animationDuration,
+              animationStart: animationStart,
+              autoFlipDirection: autoFlipDirection,
+              debounceDuration: debounceDuration,
+              direction: direction,
+              errorBuilder: errorBuilder,
+              focusNode: focusNode,
+              getImmediateSuggestions: getImmediateSuggestions,
+              hideKeyboard: hideKeyboard,
+              hideOnEmpty: hideOnEmpty,
+              hideOnError: hideOnError,
+              hideOnLoading: hideOnLoading,
+              keepSuggestionsOnLoading: keepSuggestionsOnLoading,
+              keepSuggestionsOnSuggestionSelected:
+                  keepSuggestionsOnSuggestionSelected,
+              loadingBuilder: loadingBuilder,
+              noItemsFoundBuilder: noItemsFoundBuilder,
+              suggestionsBoxController: suggestionsBoxController,
+              suggestionsBoxVerticalOffset: suggestionsBoxVerticalOffset,
+              textFieldConfiguration: textFieldConfiguration,
+              transitionBuilder: transitionBuilder,
+              valueTransformer: valueTransformer,
+              enabled: enabled,
+              autovalidateMode: autovalidateMode,
+              onChanged: onChanged,
+              onReset: onReset,
+              onSaved: onSaved,
+              key: key,
+            ),
+
           ),
           borderRadius: BorderRadius.circular(15.0),
         ),
@@ -488,13 +580,19 @@ class _PlacesAutocompleteState extends State<PlacesAutocomplete> {
           borderSide: const BorderSide(color: Colors.grey),
           borderRadius: BorderRadius.circular(15.0),
         ),
+
+        border: OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.grey),
+          borderRadius: BorderRadius.circular(15.0),
+        ),
         hintText: widget.searchHintText,
         filled: true,
         suffixIcon:
-            widget.showClearButton && widget.searchController!.text.isNotEmpty
+            widget.showClearButton && widget.searchController.text.isNotEmpty
                 ? IconButton(
                     icon: const Icon(Icons.close),
-                    onPressed: () => widget.searchController?.clear(),
+                    onPressed: () => widget.searchController.clear(),
+
                   )
                 : widget.suffixIcon,
       ),
@@ -527,8 +625,10 @@ class _PlacesAutocompleteState extends State<PlacesAutocomplete> {
         return predictions;
       },
       onSuggestionSelected: (value) async {
-        widget.searchController!.selection = TextSelection.collapsed(
-            offset: widget.searchController!.text.length);
+
+        widget.searchController.selection = TextSelection.collapsed(
+            offset: widget.searchController.text.length);
+
         _getDetailsByPlaceId(value.placeId ?? "", context);
         widget.onSuggestionSelected?.call(value);
       },
@@ -599,4 +699,8 @@ class _PlacesAutocompleteState extends State<PlacesAutocomplete> {
     //   ),
     // );
   }
+}
+
+ValueNotifier<T> useState<T>(T initialData) {
+  return ValueNotifier<T>(initialData);
 }
