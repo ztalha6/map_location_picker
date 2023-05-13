@@ -368,9 +368,9 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
               topCardMargin: widget.topCardMargin,
               topCardShape: widget.topCardShape,
               types: widget.types,
-              onChange: (s) {
-                setState(() {});
-              },
+              // onChange: (s) {
+              //   setState(() {});
+              // },
               onGetDetailsByPlaceId: (placesDetails) async {
                 if (placesDetails == null) {
                   logger.e("placesDetails is null");

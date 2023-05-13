@@ -119,13 +119,9 @@ class _MyAppState extends State<MyApp> {
                   MaterialPageRoute(
                     builder: (context) {
                       return MapLocationPicker(
-                        showMoreOptions: false,
-                        showMapSwitcher: false,
-                        // topCardMargin: EdgeInsets.zero,
                         apiKey: "AIzaSyCNw8p8lAjSGYr2GzQnkqwcBlEJs2tQ4cc",
                         canPopOnNextButtonTaped: true,
                         currentLatLng: const LatLng(29.121599, 76.396698),
-                        bottomCardMargin: EdgeInsets.zero,
                         onNext: (GeocodingResult? result) {
                           if (result != null) {
                             setState(() {
