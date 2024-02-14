@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:map_location_picker/map_location_picker.dart';
 
+// import 'key.dart';
+
 void main() {
   runApp(
     const MaterialApp(
@@ -24,6 +26,7 @@ class _MyAppState extends State<MyApp> {
   Prediction? initialValue;
 
   final TextEditingController _controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,7 +41,7 @@ class _MyAppState extends State<MyApp> {
             searchController: _controller,
             apiKey: "AIzaSyCNw8p8lAjSGYr2GzQnkqwcBlEJs2tQ4cc",
             mounted: mounted,
-            showBackButton: false,
+            hideBackButton: true,
             onGetDetailsByPlaceId: (PlacesDetailsResponse? result) {
               if (result != null) {
                 setState(() {
@@ -56,10 +59,10 @@ class _MyAppState extends State<MyApp> {
                   return AlertDialog(
                     title: const Text('Example'),
                     content: PlacesAutocomplete(
-                      apiKey: "YOUR_API_KEY_HERE",
+                      apiKey: "",
                       searchHintText: "Search for a place",
                       mounted: mounted,
-                      showBackButton: false,
+                      hideBackButton: true,
                       initialValue: initialValue,
                       onSuggestionSelected: (value) {
                         setState(() {
@@ -120,7 +123,7 @@ class _MyAppState extends State<MyApp> {
                     builder: (context) {
                       return MapLocationPicker(
                         apiKey: "AIzaSyCNw8p8lAjSGYr2GzQnkqwcBlEJs2tQ4cc",
-                        canPopOnNextButtonTaped: true,
+                        popOnNextButtonTaped: true,
                         currentLatLng: const LatLng(29.121599, 76.396698),
                         onNext: (GeocodingResult? result) {
                           if (result != null) {

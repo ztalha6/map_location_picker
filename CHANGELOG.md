@@ -1,3 +1,46 @@
+## 1.2.7
+
+- dependencies updated.
+- #29 not issue not found while testing.
+- #27 Map scroll and singlechildscrollview both can't be used at the same time.
+- #26 fixed.
+- New contribution by [Raju Prasad](https://github.com/rajuprasad-dev)
+- New contribution by [Hemil Gandhi](https://github.com/hgandhi67)
+
+## 1.2.6
+
+- [#22](https://github.com/rvndsngwn/map_location_picker/issues/22) fixed
+- [#25](https://github.com/rvndsngwn/map_location_picker/issues/25) fixed
+
+## 1.2.5
+
+- now if currentLatLng != null GoogleMapsGeocoding added on init. #22
+
+## 1.2.4
+
+- warnings, lints, or formatting issues fixed.
+- `lints_core` added to dev_dependencies.
+
+## 1.2.3
+
+- google_maps_flutter_web removed from dependencies because it is now supported by google_maps_flutter package.
+
+## 1.2.2
+
+- search card safe area parameters [bottom, left, maintainBottomViewPadding, minimum, right, top] added. #19
+- parameters added for hide my location button [hideLocationButton], map type button [hideLocationButton] and bottom card [hideBottomCard]. #20
+- onDecodeAddress parameter added.
+- showBackButton changed to hideBackButton.
+- canPopOnNextButtonTaped changed to popOnNextButtonTaped.
+
+## 1.2.1-dev.1
+
+- Dependencies updated.
+
+## 1.2.1
+
+- Dependencies updated.
+
 ## 1.2.0
 
 - Dependencies updated.

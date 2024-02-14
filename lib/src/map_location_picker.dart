@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart';
 import "package:google_maps_webapi/geocoding.dart";
 import 'package:google_maps_webapi/places.dart';
-import 'logger.dart';
+import 'package:http/http.dart';
+
 import 'autocomplete_view.dart';
+import 'logger.dart';
 
 class MapLocationPicker extends StatefulWidget {
   /// Padding around the map
@@ -54,7 +55,7 @@ class MapLocationPicker extends StatefulWidget {
   final ShapeBorder topCardShape;
 
   /// Top card text field border radius
-  final BorderRadius? borderRadius;
+  final BorderRadiusGeometry borderRadius;
 
   /// Top card text field hint text
   final String searchHintText;
@@ -74,23 +75,32 @@ class MapLocationPicker extends StatefulWidget {
   /// Bottom card color
   final Color? bottomCardColor;
 
+  /// On location permission callback
+  final bool hasLocationPermission;
+
+  /// detect location button click callback
+  final Function()? getLocation;
+
   /// On Suggestion Selected callback
   final Function(PlacesDetailsResponse?)? onSuggestionSelected;
 
   /// On Next Page callback
-  final Function(GeocodingResult?) onNext;
+  final Function(GeocodingResult?)? onNext;
+
+  /// When tap on map decode address callback function
+  final Function(GeocodingResult?)? onDecodeAddress;
 
   /// Show back button (default: true)
-  final bool showBackButton;
+  final bool hideBackButton;
 
   /// Popup route on next press (default: false)
-  final bool canPopOnNextButtonTaped;
+  final bool popOnNextButtonTaped;
 
-  /// Back button replacement when [showBackButton] is false and [backButton] is not null
+  /// Back button replacement when [hideBackButton] is false and [backButton] is not null
   final Widget? backButton;
 
   /// Show more suggestions
-  final bool showMoreOptions;
+  final bool hideMoreOptions;
 
   /// Dialog title
   final String dialogTitle;
@@ -148,7 +158,8 @@ class MapLocationPicker extends StatefulWidget {
   /// region: "us"
   final String? region;
 
-  /// fields
+  /// List of fields to be returned by the Google Maps Places API.
+  /// Refer to the Google Documentation here for a list of valid values: https://developers.google.com/maps/documentation/places/web-service/details
   final List<String> fields;
 
   /// Hide Suggestions on keyboard hide
@@ -163,6 +174,21 @@ class MapLocationPicker extends StatefulWidget {
   /// Add your own custom markers
   final Map<String, LatLng>? additionalMarkers;
 
+  /// Safe area parameters (default: true)
+  final bool bottom;
+  final bool left;
+  final bool maintainBottomViewPadding;
+  final EdgeInsets minimum;
+  final bool right;
+  final bool top;
+
+  /// hide location button and map type button (default: false)
+  final bool hideLocationButton;
+  final bool hideMapTypeButton;
+
+  /// hide bottom card (default: false)
+  final bool hideBottomCard;
+
   const MapLocationPicker({
     Key? key,
     this.desiredAccuracy = LocationAccuracy.high,
@@ -175,7 +201,7 @@ class MapLocationPicker extends StatefulWidget {
     this.buttonTextStyle,
     this.locationType = const [],
     this.resultType = const [],
-    this.minMaxZoomPreference = const MinMaxZoomPreference(10, 20),
+    this.minMaxZoomPreference = const MinMaxZoomPreference(0, 16),
     this.padding = const EdgeInsets.all(0),
     this.compassEnabled = true,
     this.liteModeEnabled = false,
@@ -193,13 +219,15 @@ class MapLocationPicker extends StatefulWidget {
     this.bottomCardIcon = const Icon(Icons.send),
     this.bottomCardTooltip = "Continue with this location",
     this.bottomCardColor,
+    this.hasLocationPermission = true,
+    this.getLocation,
     this.onSuggestionSelected,
-    required this.onNext,
+    this.onNext,
     this.currentLatLng = const LatLng(28.8993468, 76.6250249),
-    this.showBackButton = true,
-    this.canPopOnNextButtonTaped = false,
+    this.hideBackButton = false,
+    this.popOnNextButtonTaped = false,
     this.backButton,
-    this.showMoreOptions = true,
+    this.hideMoreOptions = false,
     this.dialogTitle = 'You can also use the following options',
     this.placesHttpClient,
     this.placesApiHeaders,
@@ -218,6 +246,16 @@ class MapLocationPicker extends StatefulWidget {
     this.mapType = MapType.normal,
     this.searchController,
     this.additionalMarkers,
+    this.bottom = true,
+    this.left = true,
+    this.maintainBottomViewPadding = false,
+    this.minimum = EdgeInsets.zero,
+    this.right = true,
+    this.top = true,
+    this.hideLocationButton = false,
+    this.hideMapTypeButton = false,
+    this.hideBottomCard = false,
+    this.onDecodeAddress,
   }) : super(key: key);
 
   @override
@@ -246,6 +284,9 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
   /// GeoCoding results list for further use
   late List<GeocodingResult> _geocodingResultList = [];
 
+  /// Search text field controller
+  late TextEditingController _searchController = TextEditingController();
+
   /// Camera position moved to location
   CameraPosition cameraPosition() {
     return CameraPosition(
@@ -253,9 +294,6 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
       zoom: _zoom,
     );
   }
-
-  /// Search text field controller
-  late TextEditingController _searchController = TextEditingController();
 
   /// Decode address from latitude & longitude
   Future<void> _decodeAddress(Location location) async {
@@ -294,6 +332,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
       }
       _address = response.results.first.formattedAddress ?? "";
       _geocodingResult = response.results.first;
+      widget.onDecodeAddress?.call(_geocodingResult);
       if (response.results.length > 1) {
         _geocodingResultList = response.results;
       }
@@ -362,7 +401,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
               region: widget.region,
               searchHintText: widget.searchHintText,
               sessionToken: widget.sessionToken,
-              showBackButton: widget.showBackButton,
+              // showBackButton: widget.showBackButton,
               strictbounds: widget.strictbounds,
               topCardColor: widget.topCardColor,
               topCardMargin: widget.topCardMargin,
@@ -608,8 +647,8 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
                               height: 50,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  widget.onNext.call(_geocodingResult);
-                                  if (widget.canPopOnNextButtonTaped) {
+                                  widget.onNext!.call(_geocodingResult);
+                                  if (widget.popOnNextButtonTaped) {
                                     Future.delayed(Duration.zero, () {
                                       Navigator.pop(context);
                                     });
@@ -632,8 +671,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
                         ],
                       ),
                     ),
-                    if (widget.showMoreOptions &&
-                        _geocodingResultList.isNotEmpty)
+                    if (_geocodingResultList.isNotEmpty)
                       GestureDetector(
                         onTap: () {
                           showDialog(

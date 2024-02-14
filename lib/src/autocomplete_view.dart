@@ -6,6 +6,10 @@ import 'package:http/http.dart';
 import '../map_location_picker.dart';
 import 'logger.dart';
 
+ValueNotifier<T> useState<T>(T initialData) {
+  return ValueNotifier<T>(initialData);
+}
+
 class PlacesAutocomplete extends StatelessWidget {
   /// API key for the map & places
   final String apiKey;
@@ -20,15 +24,15 @@ class PlacesAutocomplete extends StatelessWidget {
   final ShapeBorder topCardShape;
 
   /// Top card text field border radius
-  final BorderRadius? borderRadius;
+  final BorderRadiusGeometry borderRadius;
 
   /// Top card text field hint text
   final String searchHintText;
 
   /// Show back button (default: true)
-  final bool showBackButton;
+  final bool hideBackButton;
 
-  /// Back button replacement when [showBackButton] is false and [backButton] is not null
+  /// Back button replacement when [hideBackButton] is false and [backButton] is not null
   final Widget? backButton;
 
   /// httpClient is used to make network requests.
@@ -343,6 +347,14 @@ class PlacesAutocomplete extends StatelessWidget {
   /// Focus node for the text field
   final FocusNode? focusNode;
 
+  /// Safe area parameters
+  final bool bottom;
+  final bool left;
+  final bool maintainBottomViewPadding;
+  final EdgeInsets minimum;
+  final bool right;
+  final bool top;
+
   const PlacesAutocomplete({
     Key? key,
     required this.apiKey,
@@ -354,7 +366,8 @@ class PlacesAutocomplete extends StatelessWidget {
     ),
     this.borderRadius = const BorderRadius.all(Radius.circular(12)),
     this.searchHintText = "Search",
-    this.showBackButton = true,
+    // this.showBackButton = true,
+    this.hideBackButton = false,
     this.backButton,
     this.placesHttpClient,
     this.placesApiHeaders,
@@ -409,48 +422,13 @@ class PlacesAutocomplete extends StatelessWidget {
     this.onReset,
     this.onSaved,
     this.focusNode,
+    this.minimum = EdgeInsets.zero,
+    this.bottom = true,
+    this.left = true,
+    this.maintainBottomViewPadding = false,
+    this.right = true,
+    this.top = true,
   }) : super(key: key);
-
-  /// Get address details from place id
-  void _getDetailsByPlaceId(String placeId, BuildContext context) async {
-    try {
-      final GoogleMapsPlaces places = GoogleMapsPlaces(
-        apiKey: apiKey,
-        httpClient: placesHttpClient,
-        apiHeaders: placesApiHeaders,
-        baseUrl: placesBaseUrl,
-      );
-      final PlacesDetailsResponse response = await places.getDetailsByPlaceId(
-        placeId,
-        region: region,
-        sessionToken: sessionToken,
-        language: language,
-        fields: fields,
-      );
-
-      /// When get any error from the API, show the error in the console.
-      if (response.hasNoResults ||
-          response.isDenied ||
-          response.isInvalid ||
-          response.isNotFound ||
-          response.unknownError ||
-          response.isOverQueryLimit) {
-        logger.e(response.errorMessage);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(response.errorMessage ??
-                  "Address not found, something went wrong!"),
-            ),
-          );
-        }
-        return;
-      }
-      onGetDetailsByPlaceId?.call(response);
-    } catch (e) {
-      logger.e(e);
-    }
-  }
 
   /// Get [AutoCompleteState] for [AutoCompleteTextField]
   AutoCompleteState autoCompleteState() {
@@ -596,8 +574,45 @@ class PlacesAutocomplete extends StatelessWidget {
     //   ),
     // );
   }
-}
 
-ValueNotifier<T> useState<T>(T initialData) {
-  return ValueNotifier<T>(initialData);
+  /// Get address details from place id
+  void _getDetailsByPlaceId(String placeId, BuildContext context) async {
+    try {
+      final GoogleMapsPlaces places = GoogleMapsPlaces(
+        apiKey: apiKey,
+        httpClient: placesHttpClient,
+        apiHeaders: placesApiHeaders,
+        baseUrl: placesBaseUrl,
+      );
+      final PlacesDetailsResponse response = await places.getDetailsByPlaceId(
+        placeId,
+        region: region,
+        sessionToken: sessionToken,
+        language: language,
+        fields: fields,
+      );
+
+      /// When get any error from the API, show the error in the console.
+      if (response.hasNoResults ||
+          response.isDenied ||
+          response.isInvalid ||
+          response.isNotFound ||
+          response.unknownError ||
+          response.isOverQueryLimit) {
+        logger.e(response.errorMessage);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.errorMessage ??
+                  "Address not found, something went wrong!"),
+            ),
+          );
+        }
+        return;
+      }
+      onGetDetailsByPlaceId?.call(response);
+    } catch (e) {
+      logger.e(e);
+    }
+  }
 }
