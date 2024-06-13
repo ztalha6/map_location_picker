@@ -164,7 +164,7 @@ class MapLocationPicker extends StatefulWidget {
   final Map<String, LatLng>? additionalMarkers;
 
   const MapLocationPicker({
-    Key? key,
+    super.key,
     this.desiredAccuracy = LocationAccuracy.high,
     required this.apiKey,
     this.geoCodingBaseUrl,
@@ -187,7 +187,7 @@ class MapLocationPicker extends StatefulWidget {
     this.borderRadius = const BorderRadius.all(Radius.circular(12)),
     this.searchHintText = "Search for your address",
     this.bottomCardShape = const RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(12)),
+      borderRadius: BorderRadius.all(Radius.circular(32)),
     ),
     this.bottomCardMargin = const EdgeInsets.fromLTRB(8, 8, 8, 16),
     this.bottomCardIcon = const Icon(Icons.send),
@@ -218,7 +218,7 @@ class MapLocationPicker extends StatefulWidget {
     this.mapType = MapType.normal,
     this.searchController,
     this.additionalMarkers,
-  }) : super(key: key);
+  });
 
   @override
   State<MapLocationPicker> createState() => _MapLocationPickerState();
@@ -331,15 +331,17 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
     ));
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        // backgroundColor: Color(0x44000000),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         iconTheme: const IconThemeData(color: Colors.black),
         automaticallyImplyLeading: _searchController.text.isEmpty,
         toolbarHeight: 90,
         title: Container(
           width: double.infinity,
           height: 60,
-          color: Colors.white,
           child: Center(
             child: PlacesAutocomplete(
               apiKey: widget.apiKey,
@@ -435,6 +437,59 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
             liteModeEnabled: widget.liteModeEnabled,
             mapType: widget.mapType,
           ),
+          // Padding(
+          //   padding: const EdgeInsets.all(16.0),
+          //   child: PlacesAutocomplete(
+          //     apiKey: widget.apiKey,
+          //     mounted: mounted,
+          //     searchController: _searchController,
+          //     borderRadius: widget.borderRadius,
+          //     offset: widget.offset,
+          //     radius: widget.radius,
+          //     backButton: widget.backButton,
+          //     components: widget.components,
+          //     fields: widget.fields,
+          //     hideSuggestionsOnKeyboardHide:
+          //         widget.hideSuggestionsOnKeyboardHide,
+          //     language: widget.language,
+          //     location: widget.location,
+          //     origin: widget.origin,
+          //     placesApiHeaders: widget.placesApiHeaders,
+          //     placesBaseUrl: widget.placesBaseUrl,
+          //     placesHttpClient: widget.placesHttpClient,
+          //     region: widget.region,
+          //     searchHintText: widget.searchHintText,
+          //     sessionToken: widget.sessionToken,
+          //     showBackButton: widget.showBackButton,
+          //     strictbounds: widget.strictbounds,
+          //     topCardColor: widget.topCardColor,
+          //     topCardMargin: widget.topCardMargin,
+          //     topCardShape: widget.topCardShape,
+          //     types: widget.types,
+          //     // onChange: (s) {
+          //     //   setState(() {});
+          //     // },
+          //     onGetDetailsByPlaceId: (placesDetails) async {
+          //       if (placesDetails == null) {
+          //         logger.e("placesDetails is null");
+          //         return;
+          //       }
+          //       _initialPosition = LatLng(
+          //         placesDetails.result.geometry?.location.lat ?? 0,
+          //         placesDetails.result.geometry?.location.lng ?? 0,
+          //       );
+          //       final controller = await _controller.future;
+          //       controller.animateCamera(
+          //           CameraUpdate.newCameraPosition(cameraPosition()));
+          //       await _decodeAddress(Location(
+          //           lat: placesDetails.result.geometry?.location.lat ?? 0,
+          //           lng: placesDetails.result.geometry?.location.lng ?? 0));
+          //       _address = placesDetails.result.formattedAddress ?? "";
+          //       widget.onSuggestionSelected?.call(placesDetails);
+          //       setState(() {});
+          //     },
+          //   ),
+          // ),
           Column(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -556,122 +611,150 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
                   ),
                 ),
               ),
-              Card(
-                margin: widget.bottomCardMargin,
-                shape: widget.bottomCardShape,
-                color: widget.bottomCardColor,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding:
-                          const EdgeInsets.only(left: 16, top: 16, right: 16),
-                      child: Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Your Location",
-                                style: TextStyle(
-                                    fontSize: 20, color: Colors.grey.shade500),
-                              ),
-                              SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Icon(Icons.location_on_outlined,
-                                      color: Colors.grey.shade500),
-                                  SizedBox(width: 10),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width /
-                                        1.39,
-                                    child: Text(
-                                      _address,
-                                      maxLines: 4,
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 16),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  widget.onNext.call(_geocodingResult);
-                                  if (widget.canPopOnNextButtonTaped) {
-                                    Future.delayed(Duration.zero, () {
-                                      Navigator.pop(context);
-                                    });
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15.0),
-                                    ),
-                                    primary: Theme.of(context).primaryColor,
-                                    textStyle: widget.buttonTextStyle ??
-                                        const TextStyle(fontSize: 16)),
-                                child: const Text(
-                                  'Confirm Location',
-                                  style: TextStyle(fontSize: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Card(
+                  // margin: widget.bottomCardMargin,
+                  shape: widget.bottomCardShape,
+                  color: widget.bottomCardColor,
+                  // elevation: 10,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 16, top: 16, right: 16, bottom: 16),
+                        child: Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Location Details",
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
                                 ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (widget.showMoreOptions &&
-                        _geocodingResultList.isNotEmpty)
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: Text(widget.dialogTitle),
-                              scrollable: true,
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: _geocodingResultList.map((element) {
-                                  return ListTile(
-                                    title: Text(element.formattedAddress ?? ""),
-                                    onTap: () {
-                                      _address = element.formattedAddress ?? "";
-                                      _geocodingResult = element;
-                                      setState(() {});
-                                      Navigator.pop(context);
-                                    },
-                                  );
-                                }).toList(),
-                              ),
-                              actions: [
-                                TextButton(
-                                  child: const Text('Cancel'),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(32),
+                                          color: Colors.grey.shade300),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Icon(
+                                          Icons.location_on_outlined,
+                                          color: Colors.black54,
+                                          size: 30,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width /
+                                          1.48,
+                                      child: Text(
+                                        _address,
+                                        maxLines: 4,
+                                        style: const TextStyle(
+                                            color: Colors.black),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          );
-                        },
-                        child: Chip(
-                          label: Text(
-                            "Tap to show ${(_geocodingResultList.length - 1)} more result options",
+                          ],
+                        ),
+                      ),
+                      if (widget.showMoreOptions &&
+                          _geocodingResultList.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text(widget.dialogTitle),
+                                  scrollable: true,
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children:
+                                        _geocodingResultList.map((element) {
+                                      return ListTile(
+                                        title: Text(
+                                            element.formattedAddress ?? ""),
+                                        onTap: () {
+                                          _address =
+                                              element.formattedAddress ?? "";
+                                          _geocodingResult = element;
+                                          setState(() {});
+                                          Navigator.pop(context);
+                                        },
+                                      );
+                                    }).toList(),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      child: const Text('Cancel'),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            child: Chip(
+                              label: Text(
+                                "Tap to show ${(_geocodingResultList.length - 1)} more result options",
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            widget.onNext.call(_geocodingResult);
+                            if (widget.canPopOnNextButtonTaped) {
+                              Future.delayed(Duration.zero, () {
+                                Navigator.pop(context);
+                              });
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              backgroundColor: Theme.of(context).primaryColor,
+                              textStyle: widget.buttonTextStyle ??
+                                  const TextStyle(
+                                      fontSize: 16, color: Colors.white)),
+                          child: Text(
+                            'Confirm Location',
+                            style: widget.buttonTextStyle ??
+                                const TextStyle(
+                                    fontSize: 16, color: Colors.white),
                           ),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
